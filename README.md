@@ -33,7 +33,7 @@ You can specify one or more keywords that, if found in a message, trigger the fo
 
 3. Configure the script:
 
-   - Open `TelegramForwarder.py` file and provide your Telegram API ID, API hash, and phone number in the appropriate variables.
+   - Open `run.py` file and provide your Telegram API ID, API hash, and phone number in the appropriate variables.
    - Modify other settings as needed directly in the script.
 
 4. Run the script:
@@ -45,7 +45,7 @@ You can specify one or more keywords that, if found in a message, trigger the fo
 5. Choose an option:
    - List Chats: View a list of all chats you're a part of and select the ones to use for message forwarding.
    - Forward Messages: Enter the source chat ID, destination chat ID, and keywords to start forwarding message.
- - Enter Message id use blank for start form first message or file you can use this option when the bot crashes but you want to continue from the stopped session
+   - Enter Message id use blank to start from first message or file,  you can use this option when the bot crashes but you want to continue from the stopped session
 
 ## Notes
 
