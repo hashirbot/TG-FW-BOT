@@ -2,12 +2,17 @@ import asyncio
 import json
 from telethon import TelegramClient, events
 from telethon.errors import SessionPasswordNeededError
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Replace these with your actual values
-api_id = 'API'
-api_hash = 'HASH'
-bot_token = 'TOKEN'
-phone_number = 'MOBNO'
+api_id = os.getenv('API_ID')
+api_hash = os.getenv('API_HASH')
+bot_token = os.getenv('BOT_TOKEN')
+phone_number = os.getenv('PHONE_NUMBER')
 data_file = 'forwarder_data.json'
 
 # Initialize the Telegram client for the bot
