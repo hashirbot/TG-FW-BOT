@@ -1,6 +1,6 @@
-# Telegram Autoforwarder
+# Telegram Autoforwarder Bot
 
-The Telegram Autoforwarder is a Python script that allows you to forward messages from one chat (group or channel) to another based on specified keywords. It works with both groups and channels, requiring only the necessary permissions to access the messages.
+The Telegram Autoforwarder bot is a Python script that allows you to forward messages from one chat (group or channel) to another based on specified keywords. It works with both groups and channels, requiring only the necessary permissions to access the messages.
 
 ## Features
 
@@ -21,8 +21,8 @@ You can specify one or more keywords that, if found in a message, trigger the fo
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Muhammedhashirm009/Telegram-Forwarder
-   cd Telegram-Forwarder
+   git clone https://github.com/Muhammedhashirm009/TG-FW-BOT
+   cd TG-FW-BOT
    ```
 
 2. Install the required dependencies:
@@ -33,7 +33,10 @@ You can specify one or more keywords that, if found in a message, trigger the fo
 
 3. Configure the script:
 
-   - Open `run.py` file and provide your Telegram API ID, API hash, and phone number in the appropriate variables.
+   - Add the required api id, hash, mobile number and the bot token
+
+
+   - Open `bot.py` file and provide your Telegram API ID, API hash, and phone number in the appropriate variables.
    - Modify other settings as needed directly in the script.
 
 4. Run the script:
