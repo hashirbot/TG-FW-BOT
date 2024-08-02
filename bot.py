@@ -12,27 +12,35 @@ load_dotenv()
 api_id = os.getenv('API_ID')
 api_hash = os.getenv('API_HASH')
 bot_token = os.getenv('BOT_TOKEN')
-phone_number = os.getenv('PHONE_NUMBER')
 data_file = 'forwarder_data.json'
 
 # Initialize the Telegram client for the bot
 bot = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
 
 class TelegramForwarder:
-    def __init__(self, api_id, api_hash, phone_number):
+    def __init__(self, api_id, api_hash):
         self.api_id = api_id
         self.api_hash = api_hash
-        self.phone_number = phone_number
+        self.phone_number = None
         self.source_chat_id = None
         self.destination_channel_id = None
         self.start_message_id = None
         self.batch_size = 1000
         self.sleep_time = 1200
         self.delay_between_messages = 1  # default delay between messages in seconds
-        self.client = TelegramClient('session_' + phone_number, api_id, api_hash)
+        self.client = None
         self.total_messages_forwarded = 0
         self.forwarding_active = False
         self.last_message_id = self._load_last_message_id()
+        self.auth_code = None
+        self.password = None
+
+    async def set_phone_number(self, phone_number):
+        self.phone_number = phone_number
+        self.client = TelegramClient('session_' + phone_number, self.api_id, self.api_hash)
+        await self.client.connect()
+        if not await self.client.is_user_authorized():
+            await self._authorize()
 
     async def list_chats(self):
         await self.client.connect()
@@ -81,9 +89,18 @@ class TelegramForwarder:
     async def _authorize(self):
         try:
             await self.client.send_code_request(self.phone_number)
-            await self.client.sign_in(self.phone_number, input('Enter the code: '))
+            await bot.send_message(bot_token, "Enter the code sent to your phone using /code <code>")
         except SessionPasswordNeededError:
-            await self.client.sign_in(password=input('Enter your password: '))
+            await bot.send_message(bot_token, "Enter your password using /password <password>")
+
+    async def complete_authorization(self, code=None, password=None):
+        if code:
+            try:
+                await self.client.sign_in(self.phone_number, code)
+            except SessionPasswordNeededError:
+                await bot.send_message(bot_token, "Enter your password using /password <password>")
+        elif password:
+            await self.client.sign_in(password=password)
 
     def _save_last_message_id(self):
         with open(data_file, 'w') as f:
@@ -97,11 +114,21 @@ class TelegramForwarder:
         except FileNotFoundError:
             return None
 
-forwarder = TelegramForwarder(api_id, api_hash, phone_number)
+forwarder = TelegramForwarder(api_id, api_hash)
 
 @bot.on(events.NewMessage(pattern='/start'))
 async def start(event):
-    await event.reply("Welcome to the Telegram Forwarder Bot! Use /setsource, /setdest, /setstartid, /setbatchsize, /setsleeptime, /setdelay, /listchats, /forward, /stop, /resume, and /stats to configure and manage forwarding messages.")
+    await event.reply("Welcome to the Telegram Forwarder Bot! Use /setphone, /setsource, /setdest, /setstartid, /setbatchsize, /setsleeptime, /setdelay, /listchats, /forward, /stop, /resume, and /stats to configure and manage forwarding messages.")
+
+@bot.on(events.NewMessage(pattern='/setphone'))
+async def set_phone(event):
+    try:
+        phone_number = event.raw_text.split()[1]
+    except (IndexError, ValueError):
+        await event.reply("Usage: /setphone <phone_number>")
+        return
+    await forwarder.set_phone_number(phone_number)
+    await event.reply(f"Phone number set to: {phone_number}. Please check your Telegram app for the code.")
 
 @bot.on(events.NewMessage(pattern='/setsource'))
 async def set_source(event):
@@ -196,6 +223,27 @@ async def resume(event):
 @bot.on(events.NewMessage(pattern='/stats'))
 async def stats(event):
     await event.reply(f"Total messages forwarded: {forwarder.total_messages_forwarded}")
+
+@bot.on(events.NewMessage(pattern='/code'))
+async def code(event):
+    try:
+        code = event.raw_text.split()[1]
+    except IndexError:
+        await event.reply("Usage: /code <code>")
+        return
+    await forwarder.complete_authorization(code=code)
+    await event.reply("Authorization complete with code.")
+
+@bot.on(events.NewMessage(pattern='/password'))
+async def password(event):
+    try:
+        password = event.raw_text.split()[1]
+    except IndexError:
+        await event.reply("Usage: /password <password>")
+        return
+    forwarder.password = password
+    await forwarder.complete_authorization(password=password)
+    await event.reply("Authorization complete with password.")
 
 if __name__ == "__main__":
     bot.start()
